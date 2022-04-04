@@ -43,16 +43,18 @@ int main() {
 	}
 
 	double outhist[512] = { 0 };
+	double sumhist[512] = { 0 };
+	double sum = 0;
 	for (int j = 0; j < height; j = j + 2) {
-		outhist[j] = hist[j] / 20;
-		outhist[j + 1] = hist[j] / 20;
-		//printf("%.2lf %.2lf\n", outhist[j], outhist[j + 1]);
+		outhist[j] = hist[j/2] / 20;
+		outhist[j + 1] = hist[j/2] / 20;
+		sum += sum + outhist[j];
+		sumhist[j] = sum / 512;
+		sumhist[j + 1] = sum / 512;
+		
 
 	}
-	for (int j = 0; j < height; j++) {
-		printf("%.2lf\n", outhist[j]);
-	}
-
+	
 	for (int j = 0; j < height; j++) {
 		for (int i = 0; i < width; i++) {
 			if (j <= outhist[i]) {
