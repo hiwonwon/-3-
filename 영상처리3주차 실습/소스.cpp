@@ -12,7 +12,7 @@ int main() {
 	fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFIle1);
 
 	FILE* inputFIle2 = NULL;
-	inputFIle2 = fopen("SejongMark.bmp", "rb");
+	inputFIle2 = fopen("AICenterY_Noise.bmp", "rb");
 	fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFIle2);
 	fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFIle2);
 
@@ -21,37 +21,50 @@ int main() {
 	int size = bmpInfo.biSizeImage;
 	int bitCnt = bmpInfo.biBitCount;
 	int stride = (((bitCnt / 8) * width) + 3) / 4 * 4;
-	//printf("W: %d(%d)\nH: %d\nS: %d\nD: %d\n", width, stride, height, size, bitCnt);
 
 	unsigned char* inputImg1 = NULL, * outputImg = NULL, * inputImg2 = NULL;
-	unsigned char* Y1 = NULL, * Y2 = NULL;
 	inputImg1 = (unsigned char*)calloc(size, sizeof(unsigned char));
 	inputImg2 = (unsigned char*)calloc(size, sizeof(unsigned char));
-	Y1 = (unsigned char*)calloc(size, sizeof(unsigned char));
-	Y2 = (unsigned char*)calloc(size, sizeof(unsigned char));
 	outputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
 	fread(inputImg1, sizeof(unsigned char), size, inputFIle1);
 	fread(inputImg2, sizeof(unsigned char), size, inputFIle2);
 
-	double a, b;
+	unsigned char* Y = NULL;
+	Y = (unsigned char*)calloc(size, sizeof(unsigned char));
+
+	double hist[256] = { 0 };
+	for (int j = 0; j < height; j++) {
+		for (int i = 0; i < width; i++) {
+			Y[j * width + i] = inputImg1[j * stride + 3 * i + 0];
+
+			hist[Y[j * width + i]] ++;
+
+		}
+	}
+
+	double outhist[512] = { 0 };
+	for (int j = 0; j < height; j = j + 2) {
+		outhist[j] = hist[j] / 20;
+		outhist[j + 1] = hist[j] / 20;
+		//printf("%.2lf %.2lf\n", outhist[j], outhist[j + 1]);
+
+	}
+	for (int j = 0; j < height; j++) {
+		printf("%.2lf\n", outhist[j]);
+	}
 
 	for (int j = 0; j < height; j++) {
 		for (int i = 0; i < width; i++) {
-
-			unsigned char Y1 = 0.299 * inputImg1[j * stride + 3 * i + 2] + 0.587 * inputImg1[j * stride + 3 * i + 1] + 0.114 * inputImg1[j * stride + 3 * i + 0];
-			unsigned char Y2 = 0.299 * inputImg2[j * stride + 3 * i + 2] + 0.587 * inputImg2[j * stride + 3 * i + 1] + 0.114 * inputImg2[j * stride + 3 * i + 0];
-			
-
-			scanf("%lf%lf", &a, &b);
-
-			unsigned char Y = Y1 / a + Y2 / b;
-
-
-			outputImg[j * stride + 3 * i + 0] = (unsigned char)(Y > 255 ? 255 : (Y < 0 ? 0 : Y));
-			outputImg[j * stride + 3 * i + 1] = (unsigned char)(Y > 255 ? 255 : (Y < 0 ? 0 : Y));
-			outputImg[j * stride + 3 * i + 2] = (unsigned char)(Y > 255 ? 255 : (Y < 0 ? 0 : Y));
-
-
+			if (j <= outhist[i]) {
+				outputImg[j * stride + 3 * i + 0] = 0;
+				outputImg[j * stride + 3 * i + 1] = 0;
+				outputImg[j * stride + 3 * i + 2] = 0;
+			}
+			if (j >= outhist[i]) {
+				outputImg[j * stride + 3 * i + 0] = 255;
+				outputImg[j * stride + 3 * i + 1] = 255;
+				outputImg[j * stride + 3 * i + 2] = 255;
+			}
 		}
 	}
 
