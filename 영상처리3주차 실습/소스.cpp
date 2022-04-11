@@ -9,6 +9,7 @@ int main() {
 	inputFIle1 = fopen("AICenterY.bmp", "rb");
 	fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFIle1);
 	fread(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, inputFIle1);
+
 	FILE* inputFIle2 = NULL;
 	inputFIle2 = fopen("AICenterY_Noise.bmp", "rb");
 	fread(&bmpFile, sizeof(BITMAPFILEHEADER), 1, inputFIle2);
@@ -18,6 +19,8 @@ int main() {
 	int size = bmpInfo.biSizeImage;
 	int bitCnt = bmpInfo.biBitCount;
 	int stride = (((bitCnt / 8) * width) + 3) / 4 * 4;
+
+
 
 	int ratio = 2;
 	int width2 = bmpInfo.biWidth >> ratio;
@@ -30,12 +33,10 @@ int main() {
 	inputImg1 = (unsigned char*)calloc(size, sizeof(unsigned char));
 	inputImg2 = (unsigned char*)calloc(size, sizeof(unsigned char));
 	outputImg = (unsigned char*)calloc(size, sizeof(unsigned char));
-	HeImg = (unsigned char*)calloc(size, sizeof(unsigned char));
-	HeImgHisto = (unsigned char*)calloc(size, sizeof(unsigned char));
-	OriginHisto = (unsigned char*)calloc(size, sizeof(unsigned char));
+
 	fread(inputImg1, sizeof(unsigned char), size, inputFIle1);
 	fread(inputImg2, sizeof(unsigned char), size, inputFIle2);
-
+	
 	unsigned char* Y1 = NULL;
 	Y1 = (unsigned char*)calloc(size, sizeof(unsigned char));
 
@@ -47,37 +48,37 @@ int main() {
 
 
 	unsigned char* Y2 = NULL;
-	Y2 = (unsigned char*)calloc(width2*height2, sizeof(unsigned char));
-	
+	Y2 = (unsigned char*)calloc(width2 * height2, sizeof(unsigned char));
+
+
 	for (int j = 0; j < height2; j++) {
 		for (int i = 0; i < width2; i++) {
 			Y2[j * width2 + i] = Y1[(j << ratio) * width + (i << ratio)];
 			outputImg[j * stride2 + 3 * i + 0] = Y2[j * width2 + i];
 			outputImg[j * stride2 + 3 * i + 1] = Y2[j * width2 + i];
 			outputImg[j * stride2 + 3 * i + 2] = Y2[j * width2 + i];
-		
+
 		}
 	}
 
-
-
-
 	
-	FILE* outputFile = fopen("Output.bmp", "wb");
-	bmpInfo.biWidth = width2;
-	bmpInfo.biHeight = height2;
-	bmpInfo.biSizeImage = size2;
-	bmpFile.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + size2;
-	fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
-	fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
-	fwrite(outputImg, sizeof(unsigned char), size2, outputFile);
 
-	free(outputImg);
-	fclose(outputFile);
 
-	free(inputImg1);
-	fclose(inputFIle1);
-	free(inputImg2);
-	fclose(inputFIle2);
-	return 0;
+
+			FILE* outputFile = fopen("downsampling.bmp", "wb");
+			bmpInfo.biWidth = width2;
+			bmpInfo.biHeight = height2;
+			bmpInfo.biSizeImage = size2;
+			bmpFile.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + size2;
+			fwrite(&bmpFile, sizeof(BITMAPFILEHEADER), 1, outputFile);
+			fwrite(&bmpInfo, sizeof(BITMAPINFOHEADER), 1, outputFile);
+			fwrite(outputImg, sizeof(unsigned char), size2, outputFile);
+
+			free(outputImg);
+			fclose(outputFile);
+			free(inputImg1);
+			fclose(inputFIle1);
+			free(inputImg2);
+			fclose(inputFIle2);
+			return 0;
 }
